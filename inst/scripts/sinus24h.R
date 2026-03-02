@@ -10,8 +10,9 @@ hysteresis <- 0.5
 
 # --- 2. Objects ---
 # Your 20-element Victorian radiator (2380W)
-my_rad <- new_cast_iron("Victorian", 600, 140, 20)
-my_room <- new_room("LivingRoom", volume = 45, temp_initial = 18, u_value = 25)
+my_rad <- new_cast_iron("LK", 600, 220, 8)
+my_vol = 3*6*6
+my_room <- new_room("LivingRoom", volume = my_vol, temp_initial = 18, u_value = 25)
 
 # Storage
 results <- data.frame(
@@ -34,7 +35,7 @@ for(i in 1:steps) {
   if (my_room$temp > (target_temp + hysteresis)) boiler_active <- FALSE
 
   # Boiler Flow (65°C if on, or room temp if off)
-  t_flow <- if(boiler_active) 65 else my_room$temp
+  t_flow <- if(boiler_active) 45 else my_room$temp
 
   # Update Physics
   my_rad <- simulate_output(my_rad, t_in = t_flow, t_room = my_room$temp, flow_rate = 0.05, dt = dt)
