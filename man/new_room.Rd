@@ -4,7 +4,7 @@
 \alias{new_room}
 \title{Create a Room Object}
 \usage{
-new_room(name, volume, temp_initial = 18, u_value = 50)
+new_room(name, volume, temp_initial = 18, u_value = 30)
 }
 \arguments{
 \item{name}{Character name}

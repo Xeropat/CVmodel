@@ -13,9 +13,9 @@ new_cast_iron(name, height, depth, n_elements, n = 1.3)
 
 \item{depth}{Depth in mm}
 
-\item{n_elements}{Number of sections/columns}
+\item{n_elements}{Number of sections}
 
-\item{n}{Radiator exponent (default 1.3 for cast iron)}
+\item{n}{Delta T exponent (usually 1.3)}
 }
 \description{
 Create a Cast Iron Radiator Object

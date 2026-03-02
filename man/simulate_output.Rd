@@ -2,19 +2,21 @@
 % Please edit documentation in R/radiator.R
 \name{simulate_output}
 \alias{simulate_output}
-\title{Calculate Heat Output}
+\title{Simulate Radiator Output}
 \usage{
-simulate_output(x, t_in, t_room, flow_rate)
+simulate_output(x, t_in, t_room, flow_rate, dt = 60)
 }
 \arguments{
 \item{x}{A radiator object}
 
-\item{t_in}{Inlet water temperature (°C)}
+\item{t_in}{Flow temperature from boiler (°C)}
 
-\item{t_room}{Ambient room temperature (°C)}
+\item{t_room}{Current room temperature (°C)}
 
-\item{flow_rate}{Water flow rate (kg/s or L/s)}
+\item{flow_rate}{Water flow (kg/s)}
+
+\item{dt}{Time step in seconds}
 }
 \description{
-Calculate Heat Output
+Simulate Radiator Output
 }

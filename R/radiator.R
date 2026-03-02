@@ -30,30 +30,37 @@ print.radiator <- function(x, ...) {
   cat("  Temps (In/Out):", x$state$t_in, "degC /", x$state$t_out, "degC\n")
 }
 
-#' Calculate Heat Output
+#' Simulate Radiator Output
 #' @param x A radiator object
-#' @param t_in Inlet water temperature (°C)
-#' @param t_room Ambient room temperature (°C)
-#' @param flow_rate Water flow rate (kg/s or L/s)
+#' @param t_in Flow temperature from boiler (°C)
+#' @param t_room Current room temperature (°C)
+#' @param flow_rate Water flow (kg/s)
+#' @param dt Time step in seconds
 #' @export
-simulate_output <- function(x, t_in, t_room, flow_rate) {
-  cp <- 4186
+simulate_output <- function(x, t_in, t_room, flow_rate, dt = 60) {
+  cp_water <- 4186
 
-  # Target: Find T_out such that Q_emitted == Q_water_loss
-  # For a simple version, we can use an iterative 'shrink'
-  # or solve the energy balance equation directly.
+  # 1. Calculate heat emission based on CURRENT radiator temp
+  # (Not the water temp, because the iron has to warm up first!)
+  q_emitted <- x$p_nom * ((x$temp - t_room) / 50)^x$n
 
-  # Simplified iterative step for demonstration:
-  t_out <- t_in - 10 # Start with a 10 degree drop guess
+  # 2. Calculate heat gained from the water flow
+  # We assume the water cools down to the radiator's current temperature
+  q_from_water <- flow_rate * cp_water * (t_in - x$temp)
 
-  for(i in 1:5) {
-    t_avg <- (t_in + t_out) / 2
-    q_emitted <- x$p_nom * ((t_avg - t_room) / 50)^x$n
-    t_out <- t_in - (q_emitted / (flow_rate * cp))
-  }
+  # 3. Energy Balance: Net energy staying in the radiator (Joules)
+  # Net = (Heat in from water) - (Heat out to room)
+  net_energy <- (q_from_water - q_emitted) * dt
 
+  # 4. Update Radiator Internal Temperature
+  # deltaT = Joules / ThermalMass
+  x$temp <- x$temp + (net_energy / x$thermal_mass)
+
+  # 5. Record states for the simulation
   x$state$t_in <- t_in
-  x$state$t_out <- t_out
+  # The water leaves at the new radiator temperature
+  x$state$t_out <- x$temp
   x$state$q_actual <- q_emitted
+
   return(x)
 }
