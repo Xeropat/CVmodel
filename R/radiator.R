@@ -37,22 +37,23 @@ print.radiator <- function(x, ...) {
 #' @param flow_rate Water flow rate (kg/s or L/s)
 #' @export
 simulate_output <- function(x, t_in, t_room, flow_rate) {
-  # Specific heat of water (approx 4186 J/kg·K)
-  Cp <- 4186
+  cp <- 4186
 
-  # Iterative or simplified approach:
-  # For now, let's assume a 10°C drop to find an initial Q
-  delta_t_initial <- (t_in - 5) - t_room
-  q_guess <- x$p_nom * (delta_t_initial / 50)^x$n
+  # Target: Find T_out such that Q_emitted == Q_water_loss
+  # For a simple version, we can use an iterative 'shrink'
+  # or solve the energy balance equation directly.
 
-  # Physics: Q = m_dot * Cp * (T_in - T_out)
-  # Therefore: T_out = T_in - (Q / (m_dot * Cp))
-  t_out <- t_in - (q_guess / (flow_rate * Cp))
+  # Simplified iterative step for demonstration:
+  t_out <- t_in - 10 # Start with a 10 degree drop guess
 
-  # Update the object state
+  for(i in 1:5) {
+    t_avg <- (t_in + t_out) / 2
+    q_emitted <- x$p_nom * ((t_avg - t_room) / 50)^x$n
+    t_out <- t_in - (q_emitted / (flow_rate * cp))
+  }
+
   x$state$t_in <- t_in
-  x$state$t_out <- round(t_out, 2)
-  x$state$q_actual <- q_guess
-
+  x$state$t_out <- t_out
+  x$state$q_actual <- q_emitted
   return(x)
 }
