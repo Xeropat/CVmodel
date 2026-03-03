@@ -48,3 +48,21 @@ update_room <- function(room, radiator, temp_outdoor, dt = 60) {
   return(room)
 }
 
+#' Update Room Temperature from Multiple Heat Sources
+#' @param room Room object
+#' @param q_total Total Watts from all radiators
+#' @param temp_outdoor Outdoor temp (°C)
+#' @param dt Time step (seconds)
+#' @export
+update_room_multi <- function(room, q_total, temp_outdoor, dt = 60) {
+  # Heat loss to outside (W)
+  q_loss <- room$ua * (room$temp - temp_outdoor)
+
+  # Net energy change (Joules)
+  net_energy <- (q_total - q_loss) * dt
+
+  # Update room temp
+  room$temp <- room$temp + (net_energy / room$thermal_mass)
+
+  return(room)
+}
