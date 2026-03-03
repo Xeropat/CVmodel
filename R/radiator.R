@@ -30,36 +30,44 @@ print.radiator <- function(x, ...) {
   cat("  Temps (In/Out):", x$state$t_in, "degC /", x$state$t_out, "degC\n")
 }
 
-#' Simulate Radiator Output
-#' @param x A radiator object
+#' Simulate Radiator with LMTD and Return Temp
+#' @param x Radiator object
 #' @param t_in Flow temperature from boiler (°C)
-#' @param t_room Current room temperature (°C)
-#' @param flow_rate Water flow (kg/s)
+#' @param t_room Room temperature (°C)
+#' @param flow_rate Water flow in kg/s (default 0.05 is ~3 L/min)
 #' @param dt Time step in seconds
 #' @export
 simulate_output <- function(x, t_in, t_room, flow_rate, dt = 60) {
   cp_water <- 4186
 
-  # 1. Calculate heat emission based on CURRENT radiator temp
-  # (Not the water temp, because the iron has to warm up first!)
+  # 1. Calculate Heat Emission (Q_out)
+  # Based on current radiator surface temperature
   q_emitted <- x$p_nom * ((x$temp - t_room) / 50)^x$n
 
-  # 2. Calculate heat gained from the water flow
-  # We assume the water cools down to the radiator's current temperature
-  q_from_water <- flow_rate * cp_water * (t_in - x$temp)
+  # 2. Calculate Heat Gained from Water (Q_in)
+  # If the pump is off (flow_rate = 0), no heat enters
+  if (flow_rate > 0) {
+    # We use an exponential decay model: the water temperature
+    # approaches the radiator temperature as it flows through.
+    # NTU (Number of Transfer Units) simplified for a radiator:
+    ua_effective <- x$p_nom / (50^x$n) # Simplified UA constant
+    ntu <- ua_effective / (flow_rate * cp_water)
 
-  # 3. Energy Balance: Net energy staying in the radiator (Joules)
-  # Net = (Heat in from water) - (Heat out to room)
+    # Return temperature (T_out) calculation
+    t_out <- x$temp + (t_in - x$temp) * exp(-ntu)
+    q_from_water <- flow_rate * cp_water * (t_in - t_out)
+  } else {
+    t_out <- x$temp
+    q_from_water <- 0
+  }
+
+  # 3. Update Thermal Mass (Energy Balance)
   net_energy <- (q_from_water - q_emitted) * dt
-
-  # 4. Update Radiator Internal Temperature
-  # deltaT = Joules / ThermalMass
   x$temp <- x$temp + (net_energy / x$thermal_mass)
 
-  # 5. Record states for the simulation
+  # 4. Store State
   x$state$t_in <- t_in
-  # The water leaves at the new radiator temperature
-  x$state$t_out <- x$temp
+  x$state$t_out <- t_out   # This is your Return Temperature!
   x$state$q_actual <- q_emitted
 
   return(x)

@@ -18,6 +18,8 @@ my_room <- new_room("LivingRoom", volume = my_vol, temp_initial = 18, u_value = 
 results <- data.frame(
   time_hr = (1:steps * dt) / 3600,
   room_temp = numeric(steps),
+  rad_tin = numeric(steps),
+  rad_tout = numeric(steps),
   rad_temp = numeric(steps),
   outdoor_temp = numeric(steps),
   boiler_on = logical(steps)
@@ -44,13 +46,20 @@ for(i in 1:steps) {
   # Store
   results$room_temp[i] <- my_room$temp
   results$rad_temp[i] <- my_rad$temp
+  results$rad_tin[i] <- my_rad$state$t_in
+  results$rad_tout[i] <- my_rad$state$t_out
   results$outdoor_temp[i] <- t_out
   results$boiler_on[i] <- boiler_active
 }
 
 # Pivot for ggplot
 plot_data <- results %>%
-  pivot_longer(cols = c(room_temp, rad_temp, outdoor_temp),
+  pivot_longer(cols = c(
+    #room_temp,
+    rad_temp,
+    #outdoor_temp,
+    rad_tin,
+    rad_tout),
                names_to = "measure", values_to = "value")
 
 ggplot(plot_data, aes(x = time_hr, y = value, color = measure)) +

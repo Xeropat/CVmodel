@@ -25,12 +25,18 @@ test_that("Simulation respects physics", {
 
 test_that("Radiator respects energy balance", {
   rad <- new_cast_iron("Test", 600, 140, 20)
-  rad$temp <- 60 # Set rad temp HIGH so it actually emits heat
+  rad$temp <- 60
 
+  # Flow in at 70C
   sim <- simulate_output(rad, t_in = 70, t_room = 20, flow_rate = 0.05, dt = 60)
 
-  # The test should check if the radiator warmed up,
-  # NOT if emission equals water gain (since iron stores heat).
-  expect_gt(sim$temp, 60)
+  # 1. Return temp (t_out) must be less than Flow temp (t_in)
+  expect_lt(sim$state$t_out, 70)
+
+  # 2. Return temp (t_out) must be greater than current radiator temp
+  # because the water is hotter than the iron
+  expect_gt(sim$state$t_out, sim$temp)
+
+  # 3. Check that it emitted some heat
   expect_gt(sim$state$q_actual, 0)
 })

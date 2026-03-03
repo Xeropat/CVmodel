@@ -2,21 +2,21 @@
 % Please edit documentation in R/radiator.R
 \name{simulate_output}
 \alias{simulate_output}
-\title{Simulate Radiator Output}
+\title{Simulate Radiator with LMTD and Return Temp}
 \usage{
 simulate_output(x, t_in, t_room, flow_rate, dt = 60)
 }
 \arguments{
-\item{x}{A radiator object}
+\item{x}{Radiator object}
 
 \item{t_in}{Flow temperature from boiler (°C)}
 
-\item{t_room}{Current room temperature (°C)}
+\item{t_room}{Room temperature (°C)}
 
-\item{flow_rate}{Water flow (kg/s)}
+\item{flow_rate}{Water flow in kg/s (default 0.05 is ~3 L/min)}
 
 \item{dt}{Time step in seconds}
 }
 \description{
-Simulate Radiator Output
+Simulate Radiator with LMTD and Return Temp
 }
